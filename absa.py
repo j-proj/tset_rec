@@ -230,7 +230,7 @@ from numpy import save
 # for i in range(500):
 # 	start_training = time()
 # 	tm1.fit(X_train, ytrain, epochs=1, incremental=True)
-# 	stop_training = time()
+# 	start_training = time()
 
 # 	start_testing = time()
 # 	result2 = 100*(tm1.predict(X_train) == ytrain).mean()
