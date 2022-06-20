@@ -21,6 +21,8 @@ void mc_tm_initialize_random_streams(struct MultiClassTsetlinMachine *mc_tm, flo
 
 void mc_tm_predict(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int *y, int number_of_examples);
 
+void mc_tm_credibility(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int *y_0, int *y_1, int *y_2, int number_of_examples);
+
 void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int y[], int number_of_examples, int epochs);
 
 void mc_tm_get_state(struct MultiClassTsetlinMachine *mc_tm, int class, unsigned int *ta_state);

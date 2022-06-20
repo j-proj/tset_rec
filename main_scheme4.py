@@ -142,9 +142,13 @@ X_test, ytest = shuffle(X_test, ytest, random_state=42)
 
 # %%
 from time import time 
+import sys
+sys.path.append('./pyTsetlinMachineParallel/')
 from pyTsetlinMachineParallel.tm import MultiClassTsetlinMachine
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
+
+# pyTsetlinMachineParallel==0.2.1
 
 # X = np.asarray(ds_X)
 # y = np.asarray(ds_y)

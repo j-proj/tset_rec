@@ -1,5 +1,5 @@
 libTM: MultiClassConvolutionalTsetlinMachine.c MultiClassConvolutionalTsetlinMachine.h ConvolutionalTsetlinMachine.c ConvolutionalTsetlinMachine.h Tools.c Tools.h 
-	gcc -O3 -fopenmp -ffast-math -c -Wall -Werror -fpic MultiClassConvolutionalTsetlinMachine.c ConvolutionalTsetlinMachine.c Tools.c
+	gcc -O3 -fopenmp -ffast-math -c -Wall -fpic MultiClassConvolutionalTsetlinMachine.c ConvolutionalTsetlinMachine.c Tools.c
 	gcc -shared -O3 -fopenmp -ffast-math -o libTM.so MultiClassConvolutionalTsetlinMachine.o ConvolutionalTsetlinMachine.o Tools.o
 
 clean:

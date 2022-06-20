@@ -84,22 +84,90 @@ void mc_tm_predict(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int 
 		int max_class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[0], &X[pos]);
 		int max_class = 0;
 		for (int i = 0; i < mc_tm_thread[thread_id]->number_of_classes; i++) {	
-      int class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[i], &X[pos]);
+      		int class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[i], &X[pos]);
 			//score[i] = class_sum;
-      scores[l][i] = class_sum;
-      if (max_class_sum < class_sum) {
-				max_class_sum = class_sum;
-				max_class = i; 
-			}
+			scores[l][i] = class_sum;
+			if (max_class_sum < class_sum) {
+						max_class_sum = class_sum;
+						max_class = i; 
+					}
 		}
    /*
     for (int k = 0; k<2; k++) {
       printf("%d\t", score[k]);
     }	
     */
-    y[l] = max_class;
+    	y[l] = max_class;
 	}
 	f = fopen("score.csv", "w");
+		if (f== NULL){
+			printf("Error");
+		}
+	for (int j = 0; j < number_of_examples; j++){
+		for (int i = 0; i < 3; i++) {	
+			fprintf(f, "%d%s",scores[j][i],(i<3-1?",":"") );
+		}
+		fprintf(f, "\n");
+	}
+	fclose(f);
+  free(mc_tm_thread);
+	return; 
+}
+
+void mc_tm_credibility(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int *y_0, int *y_1, int *y_2, int number_of_examples)
+{
+
+	unsigned int step_size = mc_tm->number_of_patches * mc_tm->number_of_ta_chunks;
+
+  //int score[2] = {0};
+  int scores[number_of_examples][3];
+  FILE *f;
+  int max_threads = omp_get_max_threads();
+	struct MultiClassTsetlinMachine **mc_tm_thread = (void *)malloc(sizeof(struct MultiClassTsetlinMachine *) * max_threads);
+	struct TsetlinMachine *tm = mc_tm->tsetlin_machines[0];
+	for (int t = 0; t < max_threads; t++) {
+		mc_tm_thread[t] = CreateMultiClassTsetlinMachine(mc_tm->number_of_classes, tm->number_of_clauses, tm->number_of_features, tm->number_of_patches, tm->number_of_ta_chunks, tm->number_of_state_bits, tm->T, tm->s, tm->s_range, tm->boost_true_positive_feedback, tm->weighted_clauses);
+		for (int i = 0; i < mc_tm->number_of_classes; i++) {
+			free(mc_tm_thread[t]->tsetlin_machines[i]->ta_state);
+			mc_tm_thread[t]->tsetlin_machines[i]->ta_state = mc_tm->tsetlin_machines[i]->ta_state;
+			free(mc_tm_thread[t]->tsetlin_machines[i]->clause_weights);
+			mc_tm_thread[t]->tsetlin_machines[i]->clause_weights = mc_tm->tsetlin_machines[i]->clause_weights;
+		}	
+	}
+
+	#pragma omp parallel for
+	for (int l = 0; l < number_of_examples; l++) {
+		int thread_id = omp_get_thread_num();
+
+		unsigned int pos = l*step_size;
+		// Identify class with largest output
+		int max_class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[0], &X[pos]);
+		int max_class = 0;
+		for (int i = 0; i < mc_tm_thread[thread_id]->number_of_classes; i++) {	
+      		int class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[i], &X[pos]);
+			//score[i] = class_sum;
+			scores[l][i] = class_sum;
+			if (i == 0)
+				y_0[l] = class_sum;
+			if (i == 1)
+				y_1[l] = class_sum;
+			if (i == 2)
+				y_2[l] = class_sum;
+			if (max_class_sum < class_sum) {
+						max_class_sum = class_sum;
+						max_class = i; 
+					}
+		}
+   /*
+    for (int k = 0; k<2; k++) {
+      printf("%d\t", score[k]);
+    }	
+    */
+    	// y_0[l] = scores[l][0];
+		// y_1[l] = scores[l][1];
+		// y_2[l] = scores[l][2];
+	}
+	f = fopen("credibility.csv", "w");
 		if (f== NULL){
 			printf("Error");
 		}
